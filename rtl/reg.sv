@@ -1,6 +1,6 @@
 module reg (
     input logic clk, rst, 
-    input logic [3:0] wEN, rEN
+    input logic wEN, rEN
     input logic [7:0] in,
     output logic [7:0] out
 );
