@@ -10,24 +10,24 @@
 */
 module fsm #(
     parameter S_START = 8'h00;
-    parameter S_FETCH = 8'h00;
-    parameter S_DECO = 8'h00;
-    parameter S_MATH_DECO = 8'h00;
-    parameter S_STOP = 8'h00;
-    parameter S_LOAD = 8'h00;
-    parameter S_STORE = 8'h00;
-    parameter S_JUMP = 8'h00;
-    parameter S_ALU = 8'h00;
-    parameter S_XOR = 8'h00;
-    parameter S_OR = 8'h00;
-    parameter S_AND = 8'h00;
-    parameter S_MATH = 8'h00;
-    parameter S_EXEC = 8'h00;
-    parameter S_EXEC = 8'h00;
-    parameter S_NEXT = 8'h00;
-    parameter S_FIN = 8'h00;
+    parameter S_FETCH = 8'h01;
+    parameter S_DECO = 8'h02;
+    parameter S_MATH_DECO = 8'h03;
+    parameter S_STOP = 8'h04;
+    parameter S_LOAD = 8'h05;
+    parameter S_STORE = 8'h06;
+    parameter S_JUMP = 8'h07;
+    parameter S_ALU = 8'h08;
+    parameter S_XOR = 8'h09;
+    parameter S_OR = 8'h0a;
+    parameter S_AND = 8'h0b;
+    parameter S_MATH = 8'h0c;
+    parameter S_EXEC = 8'h0d;
+    parameter S_EXEC = 8'h03e;
+    parameter S_NEXT = 8'h0f;
+    parameter S_FIN = 8'h10;
     
-    // parameter MATH = 3'b000;
+    // parameter MATH = 8'b000_xx_xxx;
     parameter XOR = 8'b001_00_000;
     parameter OR = 8'b010_00_000;
     parameter AND = 8'b011_00_000;
