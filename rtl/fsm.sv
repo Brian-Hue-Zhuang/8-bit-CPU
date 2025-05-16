@@ -25,7 +25,6 @@ module fsm #(
     parameter S_EXEC = 8'h0d;
     parameter S_EXEC = 8'h03e;
     parameter S_NEXT = 8'h0f;
-    parameter S_FIN = 8'h10;
     
     // parameter MATH = 8'b000_xx_xxx;
     parameter XOR = 8'b001_00_000;
@@ -95,7 +94,7 @@ module fsm #(
             
             //EXECUTE STAGE
             S_ALU, S_STOP, S_LOAD, S_STORE: state_n = S_EXEC;
-            S_EXEC: state_n = S_FIN;
+            S_EXEC: state_n = S_NEXT;
             default: state_n = state;
         endcase
     end
