@@ -1,7 +1,7 @@
-/*
-    Informs the CPU as to which instruction address it is on
-    Mainly for debugging purposes
-*/
+// ─────────────────────────────────────────────────────────────
+//    Informs the CPU as to which instruction address it is on
+//    Mainly for debugging purposes
+// ─────────────────────────────────────────────────────────────
 module counter (
     input logic clk, rst, wEN,
     input logic [7:0] in, 

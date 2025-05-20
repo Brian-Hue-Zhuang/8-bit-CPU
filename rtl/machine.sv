@@ -1,3 +1,6 @@
+// ─────────────────────────────────────────
+//    Computer in its entirety, lacks a GPU
+// ─────────────────────────────────────────
 module machine (
     input logic clk, rst
 );

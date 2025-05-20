@@ -1,22 +1,26 @@
-/*
-    Synced Clock for the entire program
-*/
+// ─────────────────────────────────────────────────────────────
+//    Easily configurable clock
+// ─────────────────────────────────────────────────────────────
 module clock (
-    input logic clk, rst,
-    input logic [3:0] limit, //Not sure how this input will be given yet, may be unnecessary
-    output logic hzX
+    input logic en, 
+    input logic [7:0] delay, // For the sake of the current implementation this will always be 0
+    output logic clk, not_clk
 );
-    logic [3:0] counter;
-    always_ff @(posedge clk, posedge rst) begin
-        if (rst) begin
-            hzX <= 0;
-        end else if (limit == 0) begin
-            hzX <= 0;
-        end else if (counter == limit) begin
-            counter <= 0;
-            hzX <= ~hzX;
+    logic clk_n;
+    logic [7:0] counter;
+    always_comb begin
+        if (en) begin
+            if (counter == delay) begin
+                clk_n = ~clk;
+                counter = 0;
+            end else begin
+                clk_n = clk;
+                counter = counter + 1;
+            end
         end else begin
-            counter <= counter + 1;
+            clk_n = clk;
         end
     end
+    assign clk = clk_n;
+    assign not_clock = !clk_n;
 endmodule

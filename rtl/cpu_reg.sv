@@ -1,13 +1,13 @@
-/*
-    Primary Registers, will be the ones instructions refer to
-*/
+// ─────────────────────────────────────────────────────────────
+//    Primary Registers, will be the ones instructions refer to
+// ─────────────────────────────────────────────────────────────
 module cpu_reg (
+    input logic clk, rst, rEN, wEN,
     input logic [7:0] in
     input logic [2:0] store,
-    input logic r, w, clk, rst, rEN, wEN,
-    inout logic [7:0] data_bus
+    inout tri [7:0] data_bus
 );
-    //Tri-state Buffer
+    // Tri-state Buffer
     assign data_bus = (rEN) ? registers[store] : 8'bz;
     assign data_bus = (wEN) ? in : data_bus; 
 

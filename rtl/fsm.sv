@@ -1,13 +1,11 @@
-/*
-    Input an 8-bit Instruction
-    Outputs the proper Read/Write enables and outputs the address bus
-    Sends output to FSM for proper distribution and utilization of information
-    Currently only accounts for 4 registers, will need to increase in size or instantiate multiple times in order to handle more complex cpus
-    Takes instructions and does the following:
-       o Uses instructions to find the right data and operations
-       o Takes the data from the correct registers (data bus)
-       o Send relevent information to the ALU
-*/
+// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+//    Sends output to FSM for proper distribution and utilization of information
+//    Currently only accounts for 4 registers, will need to increase in size or instantiate multiple times in order to handle more complex cpus
+//    Takes instructions and does the following:
+//      o Uses instructions to find the right data and operations
+//      o Takes the data from the correct registers (data bus)
+//      o Send relevent information to the ALU
+// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 module fsm #(
     parameter S_START = 8'h00;
     parameter S_FETCH = 8'h01;
@@ -26,35 +24,24 @@ module fsm #(
     parameter S_EXEC = 8'h03e;
     parameter S_NEXT = 8'h0f;
     
-    // parameter MATH = 8'b000_xx_xxx;
-    parameter XOR = 8'b001_00_000;
-    parameter OR = 8'b010_00_000;
-    parameter AND = 8'b011_00_000;
-    parameter STOP = 8'b100_00_000;
-    parameter LOAD = 8'b101_00_000;
-    parameter STORE = 8'b110_00_000;
-    parameter JUMP = 8'b111_00_000;
-    // parameter ADD = 2'b00;
-    // parameter SUB = 2'b01;
-    // parameter INC = 2'b10;
-    // parameter DEC = 2'b11;
+    parameter STOP = 8'b00_000_000;
+    parameter LOAD = 8'b01_000_000;
+    parameter STORE = 8'b11_000_000;
+    parameter JUMP = 8'b11_000_000;
 )(
     input logic [7:0] instr,
     input logic clk, rst,
     output logic [7:0] addBus, op, 
     output logic flag_zero
 );
-    //Operation Information Conditionals
+    // Operation Information Conditionals
     always_comb begin
         case(instr)
-            8'b001_xx_xxx: op = XOR;
-            8'b010_xx_xxx: op = OR;
-            8'b011_xx_xxx: op = AND;
-            8'b100_xx_xxx: op = SAVE;
-            8'b101_xx_xxx: op = LOAD;
-            8'b110_xx_xxx: op = STORE;
-            8'b111_xx_xxx: op = JUMP;
-            default: op = instr;
+            8'b00_xxx_xxx: op = STOP;
+            8'b01_xxx_xxx: op = LOAD;
+            8'b10_xxx_xxx: op = STORE;
+            8'b11_xxx_xxx: op = JUMP;
+            default: op = instr; // All math operations are the ladder
         endcase
     end
 
@@ -73,14 +60,14 @@ module fsm #(
         end
     end
 
-    //Instructions for ALU 
+    // Instructions for ALU 
     always_comb begin
         case(state)
-            //FETCH STAGE
+            // FETCH STAGE
             S_START: state_n = S_FETCH;
             S_FETCH: state_n = S_DECE;
 
-            //DECODE STAGE
+            // DECODE STAGE
             S_DECO : state_n = (op == XOR) ? S_XOR:
                                (op == OR) ? S_OR:
                                (op == AND) ? S_AND:
@@ -92,7 +79,7 @@ module fsm #(
             S_MATH: state_n = S_MATH_DECO;
             S_XOR, S_OR, S_ANDS, S_MATH_DECO: state_n = S_ALU;
             
-            //EXECUTE STAGE
+            // EXECUTE STAGE
             S_ALU, S_STOP, S_LOAD, S_STORE: state_n = S_EXEC;
             S_EXEC: state_n = S_NEXT;
             default: state_n = state;

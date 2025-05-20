@@ -1,3 +1,6 @@
+// ──────────────────────────
+//    Generic register model
+// ──────────────────────────
 module reg (
     input logic clk, rst, 
     input logic wEN, rEN
