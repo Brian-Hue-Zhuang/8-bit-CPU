@@ -10,41 +10,42 @@ module fsm #(
     parameter S_START = 8'h00;
     parameter S_FETCH = 8'h01;
     parameter S_DECO = 8'h02;
-    parameter S_MATH_DECO = 8'h03;
+    parameter S_ONE_DECO = 8'h03;
     parameter S_STOP = 8'h04;
     parameter S_LOAD = 8'h05;
     parameter S_STORE = 8'h06;
-    parameter S_JUMP = 8'h07;
-    parameter S_ALU = 8'h08;
-    parameter S_XOR = 8'h09;
-    parameter S_OR = 8'h0a;
+    parameter S_ALU = 8'h07;
+    parameter S_ONE = 8'h08;
+    parameter S_ADD = 8'h09;
+    parameter S_SUB = 8'h0a;
     parameter S_AND = 8'h0b;
     parameter S_MATH = 8'h0c;
     parameter S_EXEC = 8'h0d;
     parameter S_EXEC = 8'h03e;
     parameter S_NEXT = 8'h0f;
     
-    parameter STOP = 8'b00_000_000;
-    parameter LOAD = 8'b01_000_000;
-    parameter STORE = 8'b11_000_000;
-    parameter JUMP = 8'b11_000_000;
+    parameter ONE = 2'b00;
+    parameter ADD = 2'b01;
+    parameter SUB = 2'b10;
+    parameter AND = 2'b11;
 )(
     input logic [7:0] instr,
     input logic clk, rst,
-    output logic [7:0] addBus, op, 
+    output logic [2:0] addrBus_a, addrBus_b,
+    output logic [4:0] op, 
     output logic flag_zero
 );
     // Operation Information Conditionals
+    assign addrBus_a = instr[5:3];
+    assign addrBus_b = instr[2:0];
     always_comb begin
         case(instr)
-            8'b00_xxx_xxx: op = STOP;
-            8'b01_xxx_xxx: op = LOAD;
-            8'b10_xxx_xxx: op = STORE;
-            8'b11_xxx_xxx: op = JUMP;
-            default: op = instr; // All math operations are the ladder
+            8'b01_xxx_xxx: op = ADD;
+            8'b10_xxx_xxx: op = SUB;
+            8'b11_xxx_xxx: op = AND;
+            default: op = ONE; // All math operations are the ladder
         endcase
     end
-
     logic [2:0] op_n;
     logic [2:0] state, state_n;
     always_ff @(posedge clk, posedge rst) begin
@@ -65,22 +66,18 @@ module fsm #(
         case(state)
             // FETCH STAGE
             S_START: state_n = S_FETCH;
-            S_FETCH: state_n = S_DECE;
+            S_FETCH: state_n = S_DECO;
 
             // DECODE STAGE
-            S_DECO : state_n = (op == XOR) ? S_XOR:
-                               (op == OR) ? S_OR:
+            S_DECO : state_n = (op == ADD) ? S_ADD:
+                               (op == SUB) ? S_SUB:
                                (op == AND) ? S_AND:
-                               (op == STOP) ? S_STOP:
-                               (op == LOAD) ? S_LOAD:
-                               (op == STORE) ? S_STORE:
-                               (op == JUMP) ? S_JUMP:
-                               S_MATH;
-            S_MATH: state_n = S_MATH_DECO;
-            S_XOR, S_OR, S_ANDS, S_MATH_DECO: state_n = S_ALU;
+                               S_ONE;
+            S_ONE: state_n = S_ONE_DECO;
+            S_ADD, S_SUB, S_AND, S_ONE_DECO: state_n = S_ALU;
             
             // EXECUTE STAGE
-            S_ALU, S_STOP, S_LOAD, S_STORE: state_n = S_EXEC;
+            S_ALU: state_n = S_EXEC;
             S_EXEC: state_n = S_NEXT;
             default: state_n = state;
         endcase

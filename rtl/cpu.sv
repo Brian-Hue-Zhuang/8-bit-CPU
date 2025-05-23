@@ -29,10 +29,10 @@ module cpu #(
     output logic [7:0] addr_bus,
     inout tri [7:0] data_bus
 );
-    // ─────────────────────────────────────
-    //  BUS Framework (Based on FSM States)
-    // ─────────────────────────────────────
-    logic [7:0] bus_instr, bus_fsm, bus_alu, bus_reg;
+    // ────────────────
+    //  BUS Framework
+    // ────────────────
+    logic [7:0] bus_instr, bus_fsm, bus_op, bus_alu, bus_reg;
     logic flag_zero, flag_carry;
 
     // ──────────────────────
@@ -53,13 +53,16 @@ module cpu #(
     // ───────────
     //  Registers
     // ───────────
-    
     // Instruction Register
     logic [7:0] instr_reg;
     reg instr_reg(.clk(clk_cpu[0]), .rst(rst), .rEN(), .wEN(), .in(), .out(instr_reg));
-
+    // Register File
     logic [7:0] reg_a, reg_b, reg_c; //a +/- b = c
+    // CPU Registers
     cpu_reg math_reg(.clk(clk_cpu[1]), .rst(rst), .rEN(), .wEN(), .in(), .store(), .data_bus(data_bus));
 
-    
+    // ─────────────────
+    //  FSM State Logic
+    // ─────────────────
+    fsm cpu_fsm(.instr(bus_instr), .clk(cpu[0]), .rst(rst), .addrBus(), .op(bus_op), .flag_zero(flag_zero));
 endmodule
