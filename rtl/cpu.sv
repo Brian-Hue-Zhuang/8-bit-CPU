@@ -32,7 +32,7 @@ module cpu #(
     // ────────────────
     //  BUS Framework
     // ────────────────
-    logic [7:0] bus_instr, bus_fsm, bus_op, bus_alu, bus_reg;
+    logic [7:0] bus_instr, bus_fsm bus_alu, bus_reg;
     logic flag_zero, flag_carry;
 
     // ──────────────────────
@@ -64,5 +64,8 @@ module cpu #(
     // ─────────────────
     //  FSM State Logic
     // ─────────────────
-    fsm cpu_fsm(.instr(bus_instr), .clk(cpu[0]), .rst(rst), .addrBus(), .op(bus_op), .flag_zero(flag_zero));
+    logic [7:0] state; 
+    logic [4:0] bus_op;
+    logic [2:0] addr_a, addr_b;
+    fsm cpu_fsm(.instr(bus_instr), .clk(cpu[0]), .rst(rst), .addrBus_a(), .addrBus_b(), .op(bus_op), .state(state), .flag_zero(flag_zero));
 endmodule

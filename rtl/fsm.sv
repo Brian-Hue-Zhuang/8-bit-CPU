@@ -18,7 +18,7 @@ module fsm #(
     parameter S_ONE = 8'h08;
     parameter S_ADD = 8'h09;
     parameter S_SUB = 8'h0a;
-    parameter S_AND = 8'h0b;
+    parameter S_SWAP = 8'h0b;
     parameter S_MATH = 8'h0c;
     parameter S_EXEC = 8'h0d;
     parameter S_EXEC = 8'h03e;
@@ -27,12 +27,13 @@ module fsm #(
     parameter ONE = 2'b00;
     parameter ADD = 2'b01;
     parameter SUB = 2'b10;
-    parameter AND = 2'b11;
+    parameter SWAP = 2'b11;
 )(
     input logic [7:0] instr,
     input logic clk, rst,
     output logic [2:0] addrBus_a, addrBus_b,
     output logic [4:0] op, 
+    output logic [7:0] state,
     output logic flag_zero
 );
     // Operation Information Conditionals
@@ -42,7 +43,7 @@ module fsm #(
         case(instr)
             8'b01_xxx_xxx: op = ADD;
             8'b10_xxx_xxx: op = SUB;
-            8'b11_xxx_xxx: op = AND;
+            8'b11_xxx_xxx: op = SWAP;
             default: op = ONE; // All math operations are the ladder
         endcase
     end
@@ -71,10 +72,10 @@ module fsm #(
             // DECODE STAGE
             S_DECO : state_n = (op == ADD) ? S_ADD:
                                (op == SUB) ? S_SUB:
-                               (op == AND) ? S_AND:
+                               (op == AND) ? S_SWAP:
                                S_ONE;
             S_ONE: state_n = S_ONE_DECO;
-            S_ADD, S_SUB, S_AND, S_ONE_DECO: state_n = S_ALU;
+            S_ADD, S_SUB, S_SWAP, S_ONE_DECO: state_n = S_ALU;
             
             // EXECUTE STAGE
             S_ALU: state_n = S_EXEC;
