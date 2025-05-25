@@ -23,7 +23,7 @@ module alu #(
             flag_carry <= 0;
             flag_zero <= 0;
         end else if (en) begin
-            case(op)
+            case (op)
                 ADD: {flag_carry, out_n} = a + b;
                 SUB: {flag_carry, out_n} = a - b;
                 INC: {flag_carry, buff_out} <= in_a + 1;

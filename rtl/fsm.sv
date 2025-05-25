@@ -21,7 +21,7 @@ module fsm #(
     parameter S_SWAP = 8'h0b;
     parameter S_MATH = 8'h0c;
     parameter S_EXEC = 8'h0d;
-    parameter S_EXEC = 8'h03e;
+    parameter S_EXEC = 8'h0e;
     parameter S_NEXT = 8'h0f;
     
     parameter ONE = 2'b00;
@@ -63,8 +63,9 @@ module fsm #(
     end
 
     // Instructions for ALU 
+    // CPU STAGE COULD BE RUN BASED OF THIS ALWAYS COMB
     always_comb begin
-        case(state)
+        case (state)
             // FETCH STAGE
             S_START: state_n = S_FETCH;
             S_FETCH: state_n = S_DECO;

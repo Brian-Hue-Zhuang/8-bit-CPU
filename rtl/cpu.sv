@@ -32,34 +32,35 @@ module cpu #(
     // ────────────────
     //  BUS Framework
     // ────────────────
-    logic [7:0] bus_instr, bus_fsm bus_alu, bus_reg;
+    logic [7:0] bus_instr, bus_fsm, bus_alu, bus_reg;
     logic flag_zero, flag_carry;
 
     // ──────────────────────
     //  CPU's Internal CLock
     // ──────────────────────
-    logic [1:0] clk_cpu = 2'b01; // {alu(everything else) clock, memory clock, control (fsm) clock}
-    logic stop;
-    // The order should be as follows:
-    //   1. Update control (fsm)
-    //   2. Perform state relevent tasks
-    //   3. Repeat
-    always_ff @(posedge clk) begin
-        if (!stop) begin
-            clk_cpu <= clk_cpu == 1'b10 ? 2'b01:clk_cpu << 1;
+    logic [2:0] cpu_stage = 0; // Simply follows the fetch->decode->execute cycle {execute, decode, fetch}
+    logic [2:0] cpu_stage_n;
+    always_ff @(posedge clk, posedge rst) begin
+        if (rst) begin
+            cpu_stage <= 0;
+        end else begin
+            cpu_stage <= cpu_stage_n;
         end
     end
+    logic stop;
+    logic cpu_clk;
+    clock cpu_clk(.en(clk), .delay(0), .clk(cpu_clk), .not_clk());  
 
     // ───────────
     //  Registers
     // ───────────
     // Instruction Register
     logic [7:0] instr_reg;
-    reg instr_reg(.clk(clk_cpu[0]), .rst(rst), .rEN(), .wEN(), .in(), .out(instr_reg));
+    reg instr_reg(.clk(cpu_clk), .rst(rst), .rEN(cpu_stage[0]), .wEN(cpu_stage[0]), .in(), .out(instr_reg));
     // Register File
     logic [7:0] reg_a, reg_b, reg_c; //a +/- b = c
     // CPU Registers
-    cpu_reg math_reg(.clk(clk_cpu[1]), .rst(rst), .rEN(), .wEN(), .in(), .store(), .data_bus(data_bus));
+    cpu_reg regs(.clk(cpu_clk), .rst(rst), .rEN(cpu_stage[2]), .wEN(cpu_stage[2]), .in(), .store(), .data_bus(data_bus));
 
     // ─────────────────
     //  FSM State Logic
@@ -67,5 +68,19 @@ module cpu #(
     logic [7:0] state; 
     logic [4:0] bus_op;
     logic [2:0] addr_a, addr_b;
-    fsm cpu_fsm(.instr(bus_instr), .clk(cpu[0]), .rst(rst), .addrBus_a(), .addrBus_b(), .op(bus_op), .state(state), .flag_zero(flag_zero));
+    fsm cpu_fsm(.instr(bus_instr), .clk(clk), .rst(rst), .addrBus_a(reg_a), .addrBus_b(reg_b), .op(bus_op), .state(state), .flag_zero(flag_zero));
+    // What should the cpu do with the information of the current state?
+    always_comb begin
+        case (state)
+            S_START, S_FETCH: cpu_stage_n = 3'b001;
+            S_DECO, S_ONE, S_ADD, S_SUB, S_SWAP, S_ONE_DECO: cpu_stage_n = 3'b010;
+            S_ALU, S_EXEC: cpu_stage_n = 3'b100;
+            default: cpu_stage_n = cpu_stage;
+        endcase
+    end
+
+    // ───────────
+    //  ALU Setup
+    // ───────────
+    alu ALU(.en(cpu_stage[2]), .clk(clk), .rst(rst), .operation(), .a(), .b(), .out(), .flag_zero(), .flag_carry());
 endmodule
