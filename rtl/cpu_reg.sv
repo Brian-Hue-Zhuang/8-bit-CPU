@@ -8,8 +8,8 @@ module cpu_reg (
     inout tri [7:0] data_bus
 );
     // Tri-state Buffer
-    assign data_bus = (rEN) ? registers[store] : 8'bz;
-    assign data_bus = (wEN) ? in : data_bus; 
+    assign data_bus = (wEN) ? registers[store] : 8'bz;
+    assign data_bus = (rEN) ? in : data_bus; 
 
     logic [7:0] registers [0:7];
     always_ff @(posedge clk or posedge reset) begin
