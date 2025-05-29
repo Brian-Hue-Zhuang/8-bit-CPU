@@ -66,21 +66,22 @@ module cpu #(
     //  FSM State Logic
     // ─────────────────
     logic [7:0] state; 
-    logic [4:0] bus_op;
+    logic [4:0] op;
     logic [2:0] addr_a, addr_b;
-    fsm cpu_fsm(.instr(bus_instr), .clk(clk), .rst(rst), .addrBus_a(reg_a), .addrBus_b(reg_b), .op(bus_op), .state(state), .flag_zero(flag_zero));
-    // What should the cpu do with the information of the current state?
-    always_comb begin
-        case (state)
-            S_START, S_FETCH: cpu_stage_n = 3'b001;
-            S_DECO, S_ONE, S_ADD, S_SUB, S_SWAP, S_ONE_DECO: cpu_stage_n = 3'b010;
-            S_ALU, S_EXEC: cpu_stage_n = 3'b100;
-            default: cpu_stage_n = cpu_stage;
-        endcase
-    end
-
+    fsm cpu_fsm(.instr(bus_instr), .clk(clk), .rst(rst), .addrBus_a(reg_a), .addrBus_b(reg_b), .cpu_stage(cpu_stage) .op(op), .state(state), .flag_zero(flag_zero));
+    
     // ───────────
     //  ALU Setup
     // ───────────
-    alu ALU(.en(cpu_stage[2]), .clk(clk), .rst(rst), .operation(), .a(), .b(), .out(), .flag_zero(), .flag_carry());
+    logic [7:0] result; 
+    alu ALU(.en(cpu_stage[2]), .clk(clk), .rst(rst), .operation(op), .a(addr_a), .b(addr_b), .out(result), .flag_zero(flag_zero), .flag_carry(flag_carry));
+    always_ff @(posedge clk, posedge rst) begin
+        if (rst) begin
+            bus_reg = 0;
+        end else if (S_EXEC) begin
+            bus_reg = result;
+        end else begin
+            bus_reg = bus_reg;
+        end
+    end
 endmodule
