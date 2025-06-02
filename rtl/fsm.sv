@@ -31,8 +31,7 @@ module fsm #(
 )(
     input logic [7:0] instr,
     input logic clk, rst,
-    output logic [2:0] addrBus_a, addrBus_b, cpu_stage,
-    output logic [4:0] op, 
+    output logic [1:0] op, 
     output logic [7:0] state,
     output logic flag_zero
 );
@@ -63,16 +62,6 @@ module fsm #(
             cpu_stage = cpu_stage_n;
             flag_zero <= 0;
         end
-    end
-
-    logic [3:0] cpu_stage_n;
-    always_comb begin
-        case (state)
-            S_START, S_FETCH: cpu_stage_n = 3'b001;
-            S_DECO, S_ONE, S_ADD, S_SUB, S_SWAP, S_ONE_DECO: cpu_stage_n = 3'b010;
-            S_ALU, S_EXEC: cpu_stage_n = 3'b100;
-            default: cpu_stage_n = cpu_stage;
-        endcase
     end
 
     // Instructions for ALU 

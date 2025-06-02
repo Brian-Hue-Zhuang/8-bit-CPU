@@ -66,14 +66,24 @@ module cpu #(
     //  FSM State Logic
     // ─────────────────
     logic [7:0] state; 
-    logic [4:0] op;
-    logic [2:0] addr_a, addr_b;
-    fsm cpu_fsm(.instr(bus_instr), .clk(clk), .rst(rst), .addrBus_a(reg_a), .addrBus_b(reg_b), .cpu_stage(cpu_stage) .op(op), .state(state), .flag_zero(flag_zero));
-    
+    logic [1:0] op;
+
+    fsm cpu_fsm(.instr(bus_instr), .clk(clk), .rst(rst), .op(op), .state(state), .flag_zero(flag_zero));
+
+    logic [2:0] cpu_stage_n;
+    always_comb begin
+        case (state)
+            S_START, S_FETCH: cpu_stage_n = 3'b001;
+            S_DECO, S_ONE, S_ADD, S_SUB, S_SWAP, S_ONE_DECO: cpu_stage_n = 3'b010;
+            S_ALU, S_EXEC: cpu_stage_n = 3'b100;
+            default: cpu_stage_n = cpu_stage;
+        endcase
+    end
+
     // ───────────
     //  ALU Setup
     // ───────────
-    logic [7:0] result; 
+    logic [7:0] result, bus_a, bus_b; 
     alu ALU(.en(cpu_stage[2]), .clk(clk), .rst(rst), .operation(op), .a(addr_a), .b(addr_b), .out(result), .flag_zero(flag_zero), .flag_carry(flag_carry));
     always_ff @(posedge clk, posedge rst) begin
         if (rst) begin

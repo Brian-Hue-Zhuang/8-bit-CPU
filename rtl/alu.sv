@@ -2,16 +2,21 @@
 //    Self-Explanatory ALU Module
 // ─────────────────────────────────────────────────────────────
 module alu #(
-    parameter XOR = 8'b001_00_000;
-    parameter OR = 8'b010_00_000;
-    parameter AND = 8'b011_00_000;
-    parameter ADD = 2'b00;
-    parameter SUB = 2'b01;
-    parameter INC = 2'b10;
-    parameter DEC = 2'b11;
+    parameter ONE = 2'b00;
+    parameter ADD = 2'b01;
+    parameter SUB = 2'b10;
+    parameter SWAP = 2'b11;
+
+    parameter STORE = 8'b00000001;
+    parameter LOAD = 8'b00000010;
+    parameter STOP = 8'b00000100;
+    parameter JUMP = 8'b00001000;
+    parameter M_STORE = 8'b00010000; //STORE INTO MEMORY
+    parameter INC = 8'b00100000;
+    parameter DEC = 8'b01000000;
 )(
     input logic en, clk, rst, 
-    input logic [2:0] operation,
+    input logic [1:0] operation,
     input logic [7:0] a, b,
     output logic [7:0] out,  
     output logic flag_zero, flag_carry  
@@ -26,11 +31,14 @@ module alu #(
             case (op)
                 ADD: {flag_carry, out_n} = a + b;
                 SUB: {flag_carry, out_n} = a - b;
-                INC: {flag_carry, buff_out} <= in_a + 1;
-                DEC: {flag_carry, buff_out} <= in_a - 1;
-                AND: {flag_carry, out_n} = a & b; flag_carry <= 1'b0;
-                OR: {flag_carry, out_n} = a | b; flag_carry <= 1'b0;
-                XOR: {flag_carry, out_n} = a ^ b; flag_carry <= 1'b0;
+                ONE:begin
+                        case (a)
+                            DEC: {flag_carry, out_n} = b - 1;
+                            INC: {flag_carry, out_n} = b + 1;
+                            default: {flag_carry, out_n} = 9'b0;
+                        endcase
+                    end
+                default: {flag_carry, out_n} = 9'b0;
             endcase
             flag_zero <= (buff_out == 0);
         end 
