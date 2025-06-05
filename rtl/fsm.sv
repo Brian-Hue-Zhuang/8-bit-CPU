@@ -30,22 +30,13 @@ module fsm #(
     parameter SWAP = 2'b11;
 )(
     input logic [7:0] instr,
-    input logic clk, rst,
-    output logic [1:0] op, 
+    input logic clk, rst, 
     output logic [7:0] state,
     output logic flag_zero
 );
     // Operation Information Conditionals
     assign addrBus_a = instr[5:3];
     assign addrBus_b = instr[2:0];
-    always_comb begin
-        case(instr)
-            8'b01_xxx_xxx: op = ADD;
-            8'b10_xxx_xxx: op = SUB;
-            8'b11_xxx_xxx: op = SWAP;
-            default: op = ONE; // All math operations are the ladder
-        endcase
-    end
     logic [2:0] op_n;
     logic [2:0] state, state_n;
     always_ff @(posedge clk, posedge rst) begin
@@ -65,7 +56,6 @@ module fsm #(
     end
 
     // Instructions for ALU 
-    // CPU STAGE COULD BE RUN BASED OF THIS ALWAYS COMB
     always_comb begin
         case (state)
             // FETCH STAGE

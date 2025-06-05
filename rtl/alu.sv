@@ -7,13 +7,13 @@ module alu #(
     parameter SUB = 2'b10;
     parameter SWAP = 2'b11;
 
-    parameter STORE = 8'b00000001;
-    parameter LOAD = 8'b00000010;
-    parameter STOP = 8'b00000100;
-    parameter JUMP = 8'b00001000;
-    parameter M_STORE = 8'b00010000; //STORE INTO MEMORY
-    parameter INC = 8'b00100000;
-    parameter DEC = 8'b01000000;
+    parameter STORE = 8'b00_000_xxx;
+    parameter LOAD = 8'b00_001_xxx;
+    parameter STOP = 8'b00_010_xxx;
+    parameter JUMP = 8'b00_011_xxx;
+    parameter M_STORE = 8'b00_100_xxx; //STORE INTO MEMORY
+    parameter INC = 8'b00_101_xxx;
+    parameter DEC = 8'b00_110_xxx;
 )(
     input logic en, clk, rst, 
     input logic [1:0] operation,

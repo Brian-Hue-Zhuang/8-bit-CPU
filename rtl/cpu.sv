@@ -19,20 +19,29 @@ module cpu #(
     parameter S_EXEC = 8'h03e;
     parameter S_NEXT = 8'h0f;
     
-    parameter STOP = 8'b00_000_000;
-    parameter LOAD = 8'b01_000_000;
-    parameter STORE = 8'b11_000_000;
-    parameter JUMP = 8'b11_000_000;
+    parameter ONE = 2'b00;
+    parameter ADD = 2'b01;
+    parameter SUB = 2'b10;
+    parameter SWAP = 2'b11;
+
+    parameter STORE = 8'b00_000_xxx;
+    parameter LOAD = 8'b00_001_xxx;
+    parameter STOP = 8'b00_010_xxx;
+    parameter JUMP = 8'b00_011_xxx;
+    parameter M_STORE = 8'b00_100_xxx; //STORE INTO MEMORY
+    parameter INC = 8'b00_101_xxx;
+    parameter DEC = 8'b00_110_xxx;
 )(
     input logic clk, rst, 
-    output logic o_clk, 
+    output logic o_clk, nomem_flag,
     output logic [7:0] addr_bus,
     inout tri [7:0] data_bus
 );
     // ────────────────
     //  BUS Framework
     // ────────────────
-    logic [7:0] bus_instr, bus_fsm, bus_alu, bus_reg;
+    logic [7:0] instr_bus, bus_fsm, bus_alu, bus_reg;
+    logic [2:0] bus_addr;
     logic flag_zero, flag_carry;
 
     // ──────────────────────
@@ -49,26 +58,24 @@ module cpu #(
     end
     logic stop;
     logic cpu_clk;
-    clock cpu_clk(.en(clk), .delay(0), .clk(cpu_clk), .not_clk());  
+    clock cpu_clk(.en(clk), .delay(0), .clk(cpu_clk), .not_clk());
 
     // ───────────
     //  Registers
     // ───────────
-    // Instruction Register
-    logic [7:0] instr_reg;
-    reg instr_reg(.clk(cpu_clk), .rst(rst), .rEN(cpu_stage[0]), .wEN(cpu_stage[0]), .in(), .out(instr_reg));
+    // CPU STAGE NEEDS MORE SPECIFICATIONS SO THAT REN AND WEN ARE NOT ON AT THE SAME TIME
+    // Memory Register
+    logic [7:0] memory_reg;
     // Register File
     logic [7:0] reg_a, reg_b, reg_c; //a +/- b = c
     // CPU Registers
-    cpu_reg regs(.clk(cpu_clk), .rst(rst), .rEN(cpu_stage[2]), .wEN(cpu_stage[2]), .in(), .store(), .data_bus(data_bus));
+    cpu_reg regs(.clk(cpu_clk), .rst(rst), .rEN(cpu_stage[0]), .wEN(cpu_stage[2]), .in(bus_reg), .select(bus_addr), .data_bus(data_bus));
 
     // ─────────────────
     //  FSM State Logic
     // ─────────────────
     logic [7:0] state; 
-    logic [1:0] op;
-
-    fsm cpu_fsm(.instr(bus_instr), .clk(clk), .rst(rst), .op(op), .state(state), .flag_zero(flag_zero));
+    fsm cpu_fsm(.instr(instr_bus), .clk(clk), .rst(rst), .state(state), .flag_zero(flag_zero));
 
     logic [2:0] cpu_stage_n;
     always_comb begin
@@ -80,11 +87,27 @@ module cpu #(
         endcase
     end
 
+    // ────────────────────
+    //  Transition to ALU
+    // ────────────────────
+    logic [7:0] n_a, n_b;
+    always_ff @(posedge clk, posedge rst) begin
+        if (rst) begin
+            bus_a = 0;
+            bus_b = 0;
+            flag_zero = 0;
+        end else begin
+            bus_a = n_a;
+            bus_b = n_b;
+            flag_zero = 0;
+        end
+    end
+
     // ───────────
-    //  ALU Setup
+    //  ALU Logic
     // ───────────
-    logic [7:0] result, bus_a, bus_b; 
-    alu ALU(.en(cpu_stage[2]), .clk(clk), .rst(rst), .operation(op), .a(addr_a), .b(addr_b), .out(result), .flag_zero(flag_zero), .flag_carry(flag_carry));
+    logic [7:0] result, result_n, bus_a, bus_b; 
+    alu ALU(.en(cpu_stage[2]), .clk(clk), .rst(rst), .operation(instr_bus[7:6]), .a(addr_a), .b(addr_b), .out(result_n), .flag_zero(flag_zero), .flag_carry(flag_carry));
     always_ff @(posedge clk, posedge rst) begin
         if (rst) begin
             bus_reg = 0;
@@ -92,6 +115,20 @@ module cpu #(
             bus_reg = result;
         end else begin
             bus_reg = bus_reg;
+        end
+    end
+
+    // ─────────────────
+    //  Non-ALU Logic
+    // ─────────────────
+    // ADD NON ALU LOGIC FOR ALL THE PROCESSES THAT AREN'T MATH RELATED
+    always_comb begin
+        if (instr_bus[7:6] == ONE) begin
+            n_a = instr_bus;
+            n_b = bus_b;
+        end else begin
+            n_a = bus_a;
+            n_b = bus_b;
         end
     end
 endmodule
