@@ -19,18 +19,6 @@ module cpu #(
     parameter S_EXEC = 8'h03e;
     parameter S_NEXT = 8'h0f;
     
-    parameter ONE = 2'b00;
-    parameter ADD = 2'b01;
-    parameter SUB = 2'b10;
-    parameter SWAP = 2'b11;
-
-    parameter STORE = 8'b00_000_xxx;
-    parameter LOAD = 8'b00_001_xxx;
-    parameter STOP = 8'b00_010_xxx;
-    parameter JUMP = 8'b00_011_xxx;
-    parameter M_STORE = 8'b00_100_xxx; //STORE INTO MEMORY
-    parameter INC = 8'b00_101_xxx;
-    parameter DEC = 8'b00_110_xxx;
 )(
     input logic clk, rst, 
     output logic o_clk, nomem_flag,
@@ -56,9 +44,6 @@ module cpu #(
             cpu_stage <= cpu_stage_n;
         end
     end
-    logic stop;
-    logic cpu_clk;
-    clock cpu_clk(.en(clk), .delay(0), .clk(cpu_clk), .not_clk());
 
     // ───────────
     //  Registers
@@ -67,9 +52,9 @@ module cpu #(
     // Memory Register
     logic [7:0] memory_reg;
     // Register File
-    logic [7:0] reg_a, reg_b, reg_c; //a +/- b = c
+    logic [7:0] reg_a, reg_b, reg_c; // a +/- b = c
     // CPU Registers
-    cpu_reg regs(.clk(cpu_clk), .rst(rst), .rEN(cpu_stage[0]), .wEN(cpu_stage[2]), .in(bus_reg), .select(bus_addr), .data_bus(data_bus));
+    cpu_reg regs(.clk(clk), .rst(rst), .rEN(cpu_stage[0]), .wEN(cpu_stage[2]), .in(bus_reg), .select(bus_addr), .data_bus(data_bus));
 
     // ─────────────────
     //  FSM State Logic

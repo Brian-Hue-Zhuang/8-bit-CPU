@@ -24,10 +24,19 @@ module fsm #(
     parameter S_EXEC = 8'h0e;
     parameter S_NEXT = 8'h0f;
     
-    parameter ONE = 2'b00;
-    parameter ADD = 2'b01;
-    parameter SUB = 2'b10;
-    parameter SWAP = 2'b11;
+    parameter OP_NOP = 0_0000;
+    parameter OP_LDI = 1_0001;
+    parameter OP_RDI = 1_0010;
+    parameter OP_JMP = 1_0011;
+    parameter OP_HLT = 1_0100;
+    parameter OP_ADD = 1_1000;
+    parameter OP_SUB = 1_1001;
+    parameter OP_NOT = 1_1010;
+    parameter OP_AND = 1_1011;
+    parameter OP_OR = 1_1100;
+    parameter OP_XOR = 1_1101;
+    parameter OP_INC = 1_1110;
+    parameter OP_DEC = 1_1111;
 )(
     input logic [7:0] instr,
     input logic clk, rst, 
